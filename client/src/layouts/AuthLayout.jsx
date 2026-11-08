@@ -86,12 +86,6 @@ export default function AuthLayout({
               FoodHub<span className="text-terracotta-500">.</span>
             </span>
           </Link>
-          <Link
-            to="/showcase"
-            className="text-xs font-semibold text-charcoal-secondary hover:text-terracotta-600 transition-colors"
-          >
-            Design System →
-          </Link>
         </div>
 
         {/* Center Form Container */}

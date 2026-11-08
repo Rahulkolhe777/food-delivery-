@@ -25,7 +25,6 @@ const OwnerOrdersPage = lazy(() => import('@/pages/owner/OwnerOrdersPage'));
 const OwnerReviewsPage = lazy(() => import('@/pages/owner/OwnerReviewsPage'));
 const OwnerAnalyticsPage = lazy(() => import('@/pages/owner/OwnerAnalyticsPage'));
 const OwnerSettingsPage = lazy(() => import('@/pages/owner/OwnerSettingsPage'));
-const DesignShowcase = lazy(() => import('@/showcase/DesignShowcase'));
 
 export default function AppRouter() {
   return (
@@ -48,9 +47,6 @@ export default function AppRouter() {
             </GuestRoute>
           }
         />
-
-        {/* ── Public Design Showcase ── */}
-        <Route path="/showcase" element={<DesignShowcase />} />
 
         {/* ── Customer Experience (Default Portal) ── */}
         <Route path="/" element={<CustomerLayout />}>

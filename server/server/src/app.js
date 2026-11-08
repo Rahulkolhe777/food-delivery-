@@ -8,30 +8,29 @@ const orderRoutes = require("./routes/order.routes");
 const reviewRoutes = require("./routes/review.routes");
 const analyticsRoutes = require("./routes/analytics.routes");
 const { notFound, errorHandler } = require("./middlewares/error.middleware");
+const cors = require("cors");
+const env = require("./config/env");
 
 const app = express();
 
 // CORS middleware: allow requests from local frontend dev servers with credentials
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (origin) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-    res.setHeader(
-      "Access-Control-Allow-Methods",
-      "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-    );
-    res.setHeader(
-      "Access-Control-Allow-Headers",
-      "Content-Type, Authorization, X-Requested-With"
-    );
-  }
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(204);
-  }
-  next();
-});
+const allowedOrigins = [
+  "http://localhost:5173",
+  env.CLIENT_URL,
+].filter(Boolean);
 
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("dev"));

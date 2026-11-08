@@ -54,14 +54,6 @@ export default function CustomerLayout() {
             >
               Restaurants
             </NavLink>
-            <NavLink
-              to="/showcase"
-              className={({ isActive }) =>
-                isActive ? 'text-terracotta-600 font-bold' : 'hover:text-charcoal transition-colors'
-              }
-            >
-              Design System
-            </NavLink>
           </div>
 
           {/* Right Action Cluster */}

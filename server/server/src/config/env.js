@@ -27,6 +27,7 @@ const env = {
   ORDER_COUNT: readCount("ORDER_COUNT", 10000000),
   REVIEW_COUNT: readCount("REVIEW_COUNT", 2000000),
   SEED_END_DATE: process.env.SEED_END_DATE || "",
+  CLIENT_URL: process.env.CLIENT_URL,
 };
 
 // Freeze so no file can change a setting by accident

@@ -1,0 +1,16 @@
+node_modules/
+**/node_modules/
+
+.env
+.env.*
+!.env.example
+
+dist/
+**/dist/
+dist-ssr/
+
+__MACOSX/
+.DS_Store
+
+*.log
+coverage/

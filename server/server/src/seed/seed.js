@@ -38,7 +38,7 @@ const SETTINGS = {
   reviews: env.REVIEW_COUNT,
   minMenuItems: 15,
   maxMenuItems: 25,
-  batchSize: 5000,
+  batchSize: Math.min(5000, Math.max(200, Math.floor(env.ORDER_COUNT / 10))),
 };
 
 const PASSWORD = "password123";
@@ -247,6 +247,9 @@ function makeEmail(firstName, lastName, number) {
 const ALL_DISHES = [...Object.values(DISHES).flat(), ...BEVERAGES];
 const DISH_NUMBER = new Map(ALL_DISHES.map((dish, i) => [dish, i]));
 
+// Track used restaurant names to ensure unique entities with distinct identities
+const usedRestaurantNames = new Set();
+
 function buildRestaurant(i, isPopular, ownerId) {
   const cityIndex = i === 0 ? DEMO_CITY_INDEX : pickCity();
   const city = CITIES[cityIndex];
@@ -261,9 +264,18 @@ function buildRestaurant(i, isPopular, ownerId) {
     if (!cuisines.includes(cuisine)) cuisines.push(cuisine);
   }
 
-  // Names repeat a lot (like branches of a chain). Some add the area to stand out.
-  let name = `${pickOne(NAME_PREFIXES)} ${pickOne(NAME_SUFFIXES[mainCuisine])}`;
-  if (random() < 0.4) name = `${name}, ${area}`;
+  // Ensure unique restaurant names across the database (no duplicate entities)
+  const prefix = pickOne(NAME_PREFIXES);
+  const suffix = pickOne(NAME_SUFFIXES[mainCuisine]);
+  let name = `${prefix} ${suffix} (${area})`;
+  if (usedRestaurantNames.has(name)) {
+    let num = 2;
+    while (usedRestaurantNames.has(`${prefix} ${suffix} (${area} #${num})`)) {
+      num++;
+    }
+    name = `${prefix} ${suffix} (${area} #${num})`;
+  }
+  usedRestaurantNames.add(name);
 
   const seconds = randomSeconds(END_DAY - 730 * DAY_MS, END_DAY - 380 * DAY_MS);
 
@@ -570,11 +582,13 @@ async function seed() {
   }
   const topOwnerIndex = topIndex % SETTINGS.owners;
   if (topOwnerIndex !== 0) {
-    // Swap name and email between the demo owner and the real top owner
+    // Swap name and email between the demo owner and the real top owner safely
     const demoOwner = await User.collection.findOne({ _id: ownerId(0) });
     const topOwner = await User.collection.findOne({ _id: ownerId(topOwnerIndex) });
-    await User.collection.updateOne({ _id: demoOwner._id }, { $set: { name: topOwner.name, email: topOwner.email } });
+    const tempEmail = `temp-${Date.now()}@foodhub.com`;
+    await User.collection.updateOne({ _id: demoOwner._id }, { $set: { email: tempEmail } });
     await User.collection.updateOne({ _id: topOwner._id }, { $set: { name: demoOwner.name, email: demoOwner.email } });
+    await User.collection.updateOne({ _id: demoOwner._id }, { $set: { name: topOwner.name, email: topOwner.email } });
   }
   const demoRestaurant = await Restaurant.collection.findOne({
     _id: makeId(restaurantSeconds[topIndex], ID_TAG.restaurant, topIndex),
@@ -586,6 +600,11 @@ async function seed() {
   const sortedCounts = Uint32Array.from(orderCounts).sort(); // ascending
   let top20Orders = 0;
   for (let k = 0; k < Math.round(restaurantCount * 0.2); k++) top20Orders += sortedCounts[restaurantCount - 1 - k];
+
+  // ---- Build indexes on all collections ----
+  console.log("\nBuilding collection indexes...");
+  await Promise.all(MODELS.map((Model) => Model.createIndexes()));
+  console.log("Indexes built successfully.");
 
   // estimatedDocumentCount reads collection metadata, so it is instant even for millions
   const [userCount, restaurantTotal, menuItemCount, orderCount, reviewCount] = await Promise.all(
