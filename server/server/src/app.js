@@ -14,28 +14,20 @@ const env = require("./config/env");
 const app = express();
 
 // CORS middleware: allow requests from local frontend dev servers with credentials
-const clientUrls = env.CLIENT_URL
-  ? env.CLIENT_URL.split(",").map((url) => url.trim().replace(/\/+$/, ""))
-  : [];
-
 const allowedOrigins = [
   "http://localhost:5173",
-  "http://127.0.0.1:5173",
-  ...clientUrls,
+  "https://foodhub-zomato-phi.vercel.app",
+  env.CLIENT_URL,
 ].filter(Boolean);
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (
-        !origin ||
-        allowedOrigins.includes(origin) ||
-        allowedOrigins.some((allowed) => origin.startsWith(allowed))
-      ) {
+      if (!origin || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
-      return callback(null, false);
+      callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
   })
