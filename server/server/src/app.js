@@ -17,7 +17,7 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:5173",
   "https://foodhub-zomato-phi.vercel.app",
-  "https://client-three-pi-50.vercel.app/",
+  "https://client-three-pi-50.vercel.app",
   env.CLIENT_URL,
 ].filter(Boolean);
 
