@@ -13,26 +13,52 @@ const env = require("./config/env");
 
 const app = express();
 
-// CORS middleware: allow requests from local frontend dev servers with credentials
-const allowedOrigins = [
+// CORS middleware: allow requests from local and production frontend origins with credentials
+const rawClientUrl = env.CLIENT_URL ? env.CLIENT_URL.split(",") : [];
+const configuredOrigins = [
   "http://localhost:5173",
+  "http://127.0.0.1:5173",
+  "http://localhost:3000",
   "https://foodhub-zomato-phi.vercel.app",
   "https://client-three-pi-50.vercel.app",
-  env.CLIENT_URL,
-].filter(Boolean);
+  ...rawClientUrl,
+]
+  .filter(Boolean)
+  .map((url) => url.trim().replace(/\/+$/, ""));
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
+function isOriginAllowed(origin) {
+  if (!origin) return true; // allow non-browser clients (curl, Postman, healthcheck)
+  const normalized = origin.trim().replace(/\/+$/, "");
+  if (configuredOrigins.includes(normalized)) return true;
+  try {
+    const url = new URL(normalized);
+    if (
+      url.hostname.endsWith(".vercel.app") ||
+      url.hostname === "localhost" ||
+      url.hostname === "127.0.0.1"
+    ) {
+      return true;
+    }
+  } catch {
+    // invalid URL format
+  }
+  return false;
+}
 
-      callback(new Error("Not allowed by CORS"));
-    },
-    credentials: true,
-  })
-);
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (isOriginAllowed(origin)) {
+      return callback(null, true);
+    }
+    return callback(null, false);
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("dev"));

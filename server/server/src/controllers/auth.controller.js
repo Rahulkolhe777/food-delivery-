@@ -13,10 +13,11 @@ const REFRESH_COOKIE = "refreshToken";
 
 // The browser only sends this cookie to /api/auth/* routes.
 function getCookieOptions() {
+  const isProd = env.isProduction || process.env.NODE_ENV === "production";
   return {
     httpOnly: true,
-    sameSite: "strict",
-    secure: env.isProduction,
+    sameSite: isProd ? "none" : "lax",
+    secure: isProd,
     path: "/api/auth",
   };
 }
