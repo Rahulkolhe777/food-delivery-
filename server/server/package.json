@@ -5,6 +5,7 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
+    "build": "node -e \"console.log('Backend build successful')\"",
     "dev": "nodemon src/server.js",
     "seed": "node src/seed/seed.js"
   },

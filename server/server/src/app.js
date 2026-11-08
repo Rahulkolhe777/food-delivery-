@@ -14,19 +14,28 @@ const env = require("./config/env");
 const app = express();
 
 // CORS middleware: allow requests from local frontend dev servers with credentials
+const clientUrls = env.CLIENT_URL
+  ? env.CLIENT_URL.split(",").map((url) => url.trim().replace(/\/+$/, ""))
+  : [];
+
 const allowedOrigins = [
   "http://localhost:5173",
-  env.CLIENT_URL,
+  "http://127.0.0.1:5173",
+  ...clientUrls,
 ].filter(Boolean);
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        allowedOrigins.some((allowed) => origin.startsWith(allowed))
+      ) {
         return callback(null, true);
       }
 
-      callback(new Error("Not allowed by CORS"));
+      return callback(null, false);
     },
     credentials: true,
   })

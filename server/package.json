@@ -1,0 +1,10 @@
+{
+  "name": "foodhub-server-entry",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "postinstall": "cd server && npm install",
+    "build": "cd server && npm run build",
+    "start": "cd server && npm start"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "foodhub-fullstack",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "npm run build --prefix client && npm run build --prefix server/server",
+    "build:client": "npm run build --prefix client",
+    "build:server": "npm run build --prefix server/server",
+    "start": "npm start --prefix server/server"
+  }
+}
